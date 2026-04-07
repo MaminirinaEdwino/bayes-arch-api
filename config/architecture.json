@@ -1,0 +1,25 @@
+{
+  "nodes": [
+    {
+      "name": "TempsReel",
+      "states": ["Non", "Oui"],
+      "cpd": [0.7, 0.3]
+    },
+    {
+      "name": "EquipeTaille",
+      "states": ["Solo", "Grande"],
+      "cpd": [0.6, 0.4]
+    },
+    {
+      "name": "Stack",
+      "states": ["PHP_Symfony", "Go_Gin", "Node_Express"],
+      "parents": ["TempsReel", "EquipeTaille"],
+      "cpd": [
+        0.8, 0.1, 0.1, 
+        0.2, 0.7, 0.1,
+        0.5, 0.2, 0.3,
+        0.1, 0.8, 0.1
+      ]
+    }
+  ]
+}
