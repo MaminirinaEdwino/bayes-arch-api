@@ -1,0 +1,19 @@
+{
+  "stack_rules": [
+    {
+      "target": "Go",
+      "conditions": {"TempsReel": "Oui"},
+      "weight": 15.0
+    },
+    {
+      "target": "PHP_Symfony",
+      "conditions": {"Complexity": "Simple"},
+      "weight": 10.0
+    },
+    {
+      "target": "Node_Express",
+      "conditions": {"TempsReel": "Oui", "Equipe": "Solo"},
+      "weight": 5.0
+    }
+  ]
+}

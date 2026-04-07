@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http" // Ton package précieux
+	"os"
 
 	"github.com/MaminirinaEdwino/gobayes"
 )
@@ -25,13 +26,54 @@ func enableCORS(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+func setupStructure(net *gobayes.Network) {
+    // On définit uniquement les noms et les états possibles
+    net.AddNode("TempsReel", []string{"Non", "Oui"})
+    net.AddNode("Equipe", []string{"Solo", "Grande"})
+    net.AddNode("Stack", []string{"PHP_Symfony", "Go_Gin", "Node_Express"})
+
+    // On définit les liens de causalité
+    net.AddEdge("TempsReel", "Stack")
+    net.AddEdge("Equipe", "Stack")
+    
+    // Note : On ne fait PAS de SetProbabilities() ici !
+    // C'est la fonction syncNetworkRules qui va le faire automatiquement.
+}
+
+func syncNetworkRules(net *gobayes.Network, rulesPath string) error {
+	file, err := os.Open(rulesPath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	var data struct {
+		StackRules []gobayes.ScoreRule `json:"stack_rules"`
+	}
+	
+	if err := json.NewDecoder(file).Decode(&data); err != nil {
+		return err
+	}
+
+	// On récupère le nœud qu'on veut automatiser
+	stackNode := net.Nodes["Stack"]
+	if stackNode != nil {
+		// Magie : Le générateur calcule la table CPD complexe pour nous
+		stackNode.GenerateAutomatedCPD(data.StackRules)
+	}
+
+	return nil
+}
+
 func main() {
 	// 1. Charger le réseau au démarrage
+	setupStructure(network)
 	var err error
-	network, err = gobayes.LoadFromFile("config/architecture.json")
-	if err != nil {
-		log.Fatal("Impossible de charger le réseau :", err)
-	}
+	// network, err = gobayes.LoadFromFile("config/architecture.json")
+	err = syncNetworkRules(network, "config/rules.json")
+    if err != nil {
+        log.Fatal("Erreur lors de la génération des connaissances :", err)
+    }
 
 	// 2. Définir la route
 	http.HandleFunc("/predict", enableCORS(predictHandler))
