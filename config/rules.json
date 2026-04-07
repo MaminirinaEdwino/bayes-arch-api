@@ -1,19 +1,14 @@
 {
   "stack_rules": [
     {
-      "target": "Go",
+      "target": "Go_Gin", 
       "conditions": {"TempsReel": "Oui"},
       "weight": 15.0
     },
     {
       "target": "PHP_Symfony",
-      "conditions": {"Complexity": "Simple"},
+      "conditions": {"Equipe": "Solo"},
       "weight": 10.0
-    },
-    {
-      "target": "Node_Express",
-      "conditions": {"TempsReel": "Oui", "Equipe": "Solo"},
-      "weight": 5.0
     }
   ]
 }

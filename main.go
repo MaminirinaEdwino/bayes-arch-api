@@ -27,6 +27,9 @@ func enableCORS(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func setupStructure(net *gobayes.Network) {
+	if net == nil {
+        log.Fatal("Le réseau passé à setupStructure est nil !")
+    }
     // On définit uniquement les noms et les états possibles
     net.AddNode("TempsReel", []string{"Non", "Oui"})
     net.AddNode("Equipe", []string{"Solo", "Grande"})
@@ -67,6 +70,7 @@ func syncNetworkRules(net *gobayes.Network, rulesPath string) error {
 
 func main() {
 	// 1. Charger le réseau au démarrage
+	network = gobayes.NewNetwork()
 	setupStructure(network)
 	var err error
 	// network, err = gobayes.LoadFromFile("config/architecture.json")
