@@ -83,33 +83,71 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
+// func predictHandler(w http.ResponseWriter, r *http.Request) {
+// 	if r.Method != http.MethodPost {
+// 		http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
+// 		return
+// 	}
+
+// 	var req RecommendationRequest
+// 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+// 		http.Error(w, err.Error(), http.StatusBadRequest)
+// 		return
+// 	}
+
+// 	// Calculer l'inférence via ton moteur gobayes
+// 	resultFactor := network.Query(req.Target, req.Evidence)
+
+// 	// Transformer le facteur en map lisible pour le JSON
+// 	targetNode := network.Nodes[req.Target]
+// 	predictions := make(map[string]float64)
+// 	for i, stateName := range targetNode.States {
+// 		predictions[stateName] = resultFactor.Values[i]
+// 	}
+
+// 	resp := RecommendationResponse{
+// 		Target:      req.Target,
+// 		Predictions: predictions,
+// 	}
+
+// 	w.Header().Set("Content-Type", "application/json")
+// 	json.NewEncoder(w).Encode(resp)
+// }
+
 func predictHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
-		return
-	}
+    // 1. Décodage de la requête JSON
+    var req RecommendationRequest
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+        http.Error(w, "Requête JSON invalide", http.StatusBadRequest)
+        return
+    }
 
-	var req RecommendationRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+    // 2. Lancement de l'inférence Bayésienne
+    // On demande au réseau de calculer la probabilité de 'Target'
+    // sachant les 'Evidence' fournies par l'utilisateur.
+    resultFactor := network.Query(req.Target, req.Evidence)
 
-	// Calculer l'inférence via ton moteur gobayes
-	resultFactor := network.Query(req.Target, req.Evidence)
+    // 3. Préparation de la réponse lisible
+    // On récupère le nœud cible pour faire correspondre les noms des états (ex: "Go")
+    // avec leurs probabilités respectives calculées.
+    targetNode, exists := network.Nodes[req.Target]
+    if !exists {
+        http.Error(w, "Nœud cible introuvable dans le réseau", http.StatusNotFound)
+        return
+    }
 
-	// Transformer le facteur en map lisible pour le JSON
-	targetNode := network.Nodes[req.Target]
-	predictions := make(map[string]float64)
-	for i, stateName := range targetNode.States {
-		predictions[stateName] = resultFactor.Values[i]
-	}
+    predictions := make(map[string]float64)
+    for i, stateName := range targetNode.States {
+        // resultFactor.Values contient les probabilités normalisées
+        predictions[stateName] = resultFactor.Values[i]
+    }
 
-	resp := RecommendationResponse{
-		Target:      req.Target,
-		Predictions: predictions,
-	}
+    // 4. Envoi de la réponse JSON
+    resp := RecommendationResponse{
+        Target:      req.Target,
+        Predictions: predictions,
+    }
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(resp)
 }
