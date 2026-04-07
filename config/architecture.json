@@ -20,6 +20,26 @@
         0.5, 0.2, 0.3,
         0.1, 0.8, 0.1
       ]
+    },{
+      "name": "VolumeDonnees",
+      "states": ["Petit", "Massif"],
+      "cpd": [0.8, 0.2]
+    },
+    {
+      "name": "ComplexiteMetier",
+      "states": ["Simple", "Complexe"],
+      "cpd": [0.6, 0.4]
+    },
+    {
+      "name": "BaseDeDonnees",
+      "states": ["PostgreSQL", "Cassandra", "SQLite"],
+      "parents": ["VolumeDonnees", "ComplexiteMetier"],
+      "cpd": [
+        0.9, 0.05, 0.05, 
+        0.1, 0.85, 0.05,
+        0.7, 0.05, 0.25,
+        0.4, 0.55, 0.05
+      ]
     }
   ]
 }
