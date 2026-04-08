@@ -28,19 +28,19 @@ func enableCORS(next http.HandlerFunc) http.HandlerFunc {
 
 func setupStructure(net *gobayes.Network) {
 	if net == nil {
-        log.Fatal("Le réseau passé à setupStructure est nil !")
-    }
-    // On définit uniquement les noms et les états possibles
-    net.AddNode("TempsReel", []string{"Non", "Oui"})
-    net.AddNode("Equipe", []string{"Solo", "Grande"})
-    net.AddNode("Stack", []string{"PHP_Symfony", "Go_Gin", "Node_Express"})
+		log.Fatal("Le réseau passé à setupStructure est nil !")
+	}
+	// On définit uniquement les noms et les états possibles
+	net.AddNode("TempsReel", []string{"Non", "Oui"})
+	net.AddNode("Equipe", []string{"Solo", "Grande"})
+	net.AddNode("Stack", []string{"PHP_Symfony", "Go_Gin"})
 
-    // On définit les liens de causalité
-    net.AddEdge("TempsReel", "Stack")
-    net.AddEdge("Equipe", "Stack")
-    
-    // Note : On ne fait PAS de SetProbabilities() ici !
-    // C'est la fonction syncNetworkRules qui va le faire automatiquement.
+	// On définit les liens de causalité
+	net.AddEdge("TempsReel", "Stack")
+	net.AddEdge("Equipe", "Stack")
+
+	// Note : On ne fait PAS de SetProbabilities() ici !
+	// C'est la fonction syncNetworkRules qui va le faire automatiquement.
 }
 
 func syncNetworkRules(net *gobayes.Network, rulesPath string) error {
@@ -53,7 +53,7 @@ func syncNetworkRules(net *gobayes.Network, rulesPath string) error {
 	var data struct {
 		StackRules []gobayes.ScoreRule `json:"stack_rules"`
 	}
-	
+
 	if err := json.NewDecoder(file).Decode(&data); err != nil {
 		return err
 	}
@@ -61,8 +61,11 @@ func syncNetworkRules(net *gobayes.Network, rulesPath string) error {
 	// On récupère le nœud qu'on veut automatiser
 	stackNode := net.Nodes["Stack"]
 	if stackNode != nil {
-		// Magie : Le générateur calcule la table CPD complexe pour nous
 		stackNode.GenerateAutomatedCPD(data.StackRules)
+		log.Printf("CPD de la Stack générée : %d valeurs", len(stackNode.CPD))
+		if len(stackNode.CPD) == 0 {
+			log.Fatal("ERREUR : La CPD est vide. Vérifie tes règles dans rules.json")
+		}
 	}
 
 	return nil
@@ -75,9 +78,9 @@ func main() {
 	var err error
 	// network, err = gobayes.LoadFromFile("config/architecture.json")
 	err = syncNetworkRules(network, "config/rules.json")
-    if err != nil {
-        log.Fatal("Erreur lors de la génération des connaissances :", err)
-    }
+	if err != nil {
+		log.Fatal("Erreur lors de la génération des connaissances :", err)
+	}
 
 	// 2. Définir la route
 	http.HandleFunc("/predict", enableCORS(predictHandler))
@@ -119,39 +122,43 @@ func main() {
 // }
 
 func predictHandler(w http.ResponseWriter, r *http.Request) {
-    // 1. Décodage de la requête JSON
-    var req RecommendationRequest
-    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-        http.Error(w, "Requête JSON invalide", http.StatusBadRequest)
-        return
+	// 1. Décodage de la requête JSON
+	var req RecommendationRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Requête JSON invalide", http.StatusBadRequest)
+		return
+	}
+
+	// 2. Lancement de l'inférence Bayésienne
+	// On demande au réseau de calculer la probabilité de 'Target'
+	// sachant les 'Evidence' fournies par l'utilisateur.
+	resultFactor := network.Query(req.Target, req.Evidence)
+
+	// 3. Préparation de la réponse lisible
+	// On récupère le nœud cible pour faire correspondre les noms des états (ex: "Go")
+	// avec leurs probabilités respectives calculées.
+	targetNode, exists := network.Nodes[req.Target]
+	if !exists {
+		http.Error(w, "Nœud cible introuvable dans le réseau", http.StatusNotFound)
+		return
+	}
+
+	predictions := make(map[string]float64)
+	for i, stateName := range targetNode.States {
+		// resultFactor.Values contient les probabilités normalisées
+		predictions[stateName] = resultFactor.Values[i]
+	}
+
+	// 4. Envoi de la réponse JSON
+	resp := RecommendationResponse{
+		Target:      req.Target,
+		Predictions: predictions,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewEncoder(w).Encode(resp)
+    if err != nil {
+        log.Printf("ERREUR ENCODAGE JSON: %v", err)
+        // Si ça échoue ici, c'est probablement car predictions contient des NaN
     }
-
-    // 2. Lancement de l'inférence Bayésienne
-    // On demande au réseau de calculer la probabilité de 'Target'
-    // sachant les 'Evidence' fournies par l'utilisateur.
-    resultFactor := network.Query(req.Target, req.Evidence)
-
-    // 3. Préparation de la réponse lisible
-    // On récupère le nœud cible pour faire correspondre les noms des états (ex: "Go")
-    // avec leurs probabilités respectives calculées.
-    targetNode, exists := network.Nodes[req.Target]
-    if !exists {
-        http.Error(w, "Nœud cible introuvable dans le réseau", http.StatusNotFound)
-        return
-    }
-
-    predictions := make(map[string]float64)
-    for i, stateName := range targetNode.States {
-        // resultFactor.Values contient les probabilités normalisées
-        predictions[stateName] = resultFactor.Values[i]
-    }
-
-    // 4. Envoi de la réponse JSON
-    resp := RecommendationResponse{
-        Target:      req.Target,
-        Predictions: predictions,
-    }
-
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(resp)
 }

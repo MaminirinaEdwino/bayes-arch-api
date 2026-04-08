@@ -1,12 +1,14 @@
 {
   "stack_rules": [
     {
-      "target": "Go_Gin", 
+      "target_node": "Stack",
+      "target_state": "Go_Gin", 
       "conditions": {"TempsReel": "Oui"},
       "weight": 15.0
     },
     {
-      "target": "PHP_Symfony",
+      "target_node": "Stack",
+      "target_state": "PHP_Symfony",
       "conditions": {"Equipe": "Solo"},
       "weight": 10.0
     }
