@@ -15,7 +15,7 @@ func setupStructure(net *gobayes.Network) {
 	// On définit uniquement les noms et les états possibles
 	net.AddNode("TempsReel", []string{"Non", "Oui"})
 	net.AddNode("Equipe", []string{"Solo", "Grande"})
-	net.AddNode("Stack", []string{"PHP_Symfony", "Go_Gin", "Node"})
+	net.AddNode("Stack", []string{"PHP_Symfony", "Go_Gin", "Node", "Ruby_on_Rail"})
 
 	// On définit les liens de causalité
 	net.AddEdge("TempsReel", "Stack")

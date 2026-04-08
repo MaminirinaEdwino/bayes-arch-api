@@ -19,7 +19,8 @@ func main() {
 	}
 
 	http.HandleFunc("/predict", enableCORS(predictHandler))
-
+	go watchRules("config/rules.json", network)
+	go watchRules("main.go", network)
 	// 3. Lancer le serveur
 	log.Println("Serveur SEAL démarré sur :8080...")
 	log.Fatal(http.ListenAndServe(":8080", nil))

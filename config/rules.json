@@ -17,6 +17,12 @@
       "target_state": "Node",
       "conditions": {"Equipe": "Grande", "TempsReel": "Non"},
       "weight": 20.0
+    },
+    {
+      "target_node": "Stack",
+      "target_state": "Ruby_on_Rail",
+      "conditions": {"Equipe": "Grande", "TempsReel": "Non"},
+      "weight": 10.0
     }
   ]
 }
