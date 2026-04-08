@@ -13,7 +13,6 @@
       "conditions": { "TempsReel": "Non", "Equipe": "Solo" },
       "weight": 15.0
     },
-
     {
       "comment": "--- ÉTAGE 2 : CHOIX DE LA STACK ---",
       "target_node": "Stack",
