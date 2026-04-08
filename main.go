@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http" // Ton package précieux
 	"os"
@@ -73,17 +72,14 @@ func syncNetworkRules(net *gobayes.Network, rulesPath string) error {
 }
 
 func main() {
-	// 1. Charger le réseau au démarrage
 	network = gobayes.NewNetwork()
 	setupStructure(network)
 	var err error
-	// network, err = gobayes.LoadFromFile("config/architecture.json")
 	err = syncNetworkRules(network, "config/rules.json")
 	if err != nil {
 		log.Fatal("Erreur lors de la génération des connaissances :", err)
 	}
-
-	// 2. Définir la route
+	
 	http.HandleFunc("/predict", enableCORS(predictHandler))
 
 	// 3. Lancer le serveur
@@ -110,10 +106,8 @@ func predictHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Nœud cible introuvable dans le réseau", http.StatusNotFound)
 		return
 	}
-	fmt.Println("result factor", resultFactor)
 	predictions := make(map[string]float64)
 	for i, stateName := range targetNode.States {
-		// resultFactor.Values contient les probabilités normalisées
 		predictions[stateName] = resultFactor.Values[i]
 	}
 
@@ -127,6 +121,5 @@ func predictHandler(w http.ResponseWriter, r *http.Request) {
 	err := json.NewEncoder(w).Encode(resp)
 	if err != nil {
 		log.Printf("ERREUR ENCODAGE JSON: %v", err)
-		// Si ça échoue ici, c'est probablement car predictions contient des NaN
 	}
 }
