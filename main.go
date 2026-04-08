@@ -9,8 +9,6 @@ import (
 
 var network *gobayes.Network
 
-
-
 func main() {
 	network = gobayes.NewNetwork()
 	setupStructure(network)
