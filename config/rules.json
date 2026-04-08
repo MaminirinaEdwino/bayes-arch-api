@@ -1,28 +1,37 @@
 {
   "stack_rules": [
     {
-      "target_node": "Stack",
-      "target_state": "Go_Gin", 
-      "conditions": {"TempsReel": "Oui", "Equipe": "Solo"},
+      "comment": "--- ÉTAGE 1 : DÉFINITION DE LA COMPLEXITÉ ---",
+      "target_node": "Complexite",
+      "target_state": "Elevee",
+      "conditions": { "TempsReel": "Oui" },
+      "weight": 20.0
+    },
+    {
+      "target_node": "Complexite",
+      "target_state": "Faible",
+      "conditions": { "TempsReel": "Non", "Equipe": "Solo" },
       "weight": 15.0
+    },
+
+    {
+      "comment": "--- ÉTAGE 2 : CHOIX DE LA STACK ---",
+      "target_node": "Stack",
+      "target_state": "Go_Gin",
+      "conditions": { "Complexite": "Elevee", "Equipe": "Grande" },
+      "weight": 25.0
     },
     {
       "target_node": "Stack",
       "target_state": "PHP_Symfony",
-      "conditions": {"Equipe": "Solo", "TempsReel": "Non"},
-      "weight": 10.0
+      "conditions": { "Complexite": "Elevee", "Equipe": "Solo" },
+      "weight": 0.0
     },
     {
       "target_node": "Stack",
       "target_state": "Node",
-      "conditions": {"Equipe": "Grande", "TempsReel": "Non"},
-      "weight": 20.0
-    },
-    {
-      "target_node": "Stack",
-      "target_state": "Ruby_on_Rail",
-      "conditions": {"Equipe": "Grande", "TempsReel": "Non"},
-      "weight": 10.0
+      "conditions": { "Complexite": "Elevee", "Equipe": "Grande" },
+      "weight": 12.0
     }
   ]
 }

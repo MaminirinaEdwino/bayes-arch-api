@@ -14,12 +14,24 @@ func setupStructure(net *gobayes.Network) {
 	}
 	// On définit uniquement les noms et les états possibles
 	net.AddNode("TempsReel", []string{"Non", "Oui"})
-	net.AddNode("Equipe", []string{"Solo", "Grande"})
-	net.AddNode("Stack", []string{"PHP_Symfony", "Go_Gin", "Node", "Ruby_on_Rail"})
+    net.AddNode("Equipe", []string{"Solo", "Grande"})
 
-	// On définit les liens de causalité
-	net.AddEdge("TempsReel", "Stack")
-	net.AddEdge("Equipe", "Stack")
+    // 2. Définition du nœud Intermédiaire (Le Raffinement)
+    net.AddNode("Complexite", []string{"Faible", "Elevee"})
+
+    // 3. Définition du nœud Cible (Résultat)
+    net.AddNode("Stack", []string{"PHP_Symfony", "Go_Gin", "Node"})
+
+    // --- RELATIONS (Le Graphe) ---
+    
+    // Le Temps Réel et la Taille de l'équipe définissent la Complexité
+    net.AddEdge("TempsReel", "Complexite")
+    net.AddEdge("Equipe", "Complexite")
+
+    // La Stack est maintenant choisie en fonction de la Complexité 
+    // et toujours de la taille de l'Équipe
+    net.AddEdge("Complexite", "Stack")
+    net.AddEdge("Equipe", "Stack")
 }
 
 func syncNetworkRules(net *gobayes.Network, rulesPath string) error {
