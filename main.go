@@ -11,21 +11,6 @@ import (
 
 var network *gobayes.Network
 
-func enableCORS(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-
-		// Si c'est une requête de pré-vérification (OPTIONS), on s'arrête là
-		if r.Method == "OPTIONS" {
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	}
-}
-
 func setupStructure(net *gobayes.Network) {
 	if net == nil {
 		log.Fatal("Le réseau passé à setupStructure est nil !")
@@ -38,9 +23,6 @@ func setupStructure(net *gobayes.Network) {
 	// On définit les liens de causalité
 	net.AddEdge("TempsReel", "Stack")
 	net.AddEdge("Equipe", "Stack")
-
-	// Note : On ne fait PAS de SetProbabilities() ici !
-	// C'est la fonction syncNetworkRules qui va le faire automatiquement.
 }
 
 func syncNetworkRules(net *gobayes.Network, rulesPath string) error {
@@ -79,7 +61,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Erreur lors de la génération des connaissances :", err)
 	}
-	
+
 	http.HandleFunc("/predict", enableCORS(predictHandler))
 
 	// 3. Lancer le serveur
