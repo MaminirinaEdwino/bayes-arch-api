@@ -3,14 +3,20 @@
     {
       "target_node": "Stack",
       "target_state": "Go_Gin", 
-      "conditions": {"TempsReel": "Oui"},
+      "conditions": {"TempsReel": "Oui", "Equipe": "Solo"},
       "weight": 15.0
     },
     {
       "target_node": "Stack",
       "target_state": "PHP_Symfony",
-      "conditions": {"Equipe": "Solo"},
+      "conditions": {"Equipe": "Solo", "TempsReel": "Non"},
       "weight": 10.0
+    },
+    {
+      "target_node": "Stack",
+      "target_state": "Node",
+      "conditions": {"Equipe": "Grande", "TempsReel": "Non"},
+      "weight": 20.0
     }
   ]
 }

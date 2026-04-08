@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http" // Ton package précieux
 	"os"
@@ -33,7 +34,7 @@ func setupStructure(net *gobayes.Network) {
 	// On définit uniquement les noms et les états possibles
 	net.AddNode("TempsReel", []string{"Non", "Oui"})
 	net.AddNode("Equipe", []string{"Solo", "Grande"})
-	net.AddNode("Stack", []string{"PHP_Symfony", "Go_Gin"})
+	net.AddNode("Stack", []string{"PHP_Symfony", "Go_Gin", "Node"})
 
 	// On définit les liens de causalité
 	net.AddEdge("TempsReel", "Stack")
@@ -61,7 +62,7 @@ func syncNetworkRules(net *gobayes.Network, rulesPath string) error {
 	// On récupère le nœud qu'on veut automatiser
 	stackNode := net.Nodes["Stack"]
 	if stackNode != nil {
-		stackNode.GenerateAutomatedCPD(data.StackRules)
+		stackNode.GenerateCPD(data.StackRules)
 		log.Printf("CPD de la Stack générée : %d valeurs", len(stackNode.CPD))
 		if len(stackNode.CPD) == 0 {
 			log.Fatal("ERREUR : La CPD est vide. Vérifie tes règles dans rules.json")
@@ -129,6 +130,15 @@ func predictHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// evidenceLabels := make(map[string]string)
+	// for nodeName, stateIdx := range req.Evidence {
+	// 	node := network.Nodes[nodeName]
+	// 	if node != nil && stateIdx < len(node.States) {
+	// 		// On convertit l'index (1) en label ("Oui")
+	// 		evidenceLabels[nodeName] = node.States[stateIdx]
+	// 	}
+	// }
+
 	// 2. Lancement de l'inférence Bayésienne
 	// On demande au réseau de calculer la probabilité de 'Target'
 	// sachant les 'Evidence' fournies par l'utilisateur.
@@ -142,7 +152,7 @@ func predictHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Nœud cible introuvable dans le réseau", http.StatusNotFound)
 		return
 	}
-
+	fmt.Println("result factor", resultFactor)
 	predictions := make(map[string]float64)
 	for i, stateName := range targetNode.States {
 		// resultFactor.Values contient les probabilités normalisées
@@ -157,8 +167,8 @@ func predictHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(resp)
-    if err != nil {
-        log.Printf("ERREUR ENCODAGE JSON: %v", err)
-        // Si ça échoue ici, c'est probablement car predictions contient des NaN
-    }
+	if err != nil {
+		log.Printf("ERREUR ENCODAGE JSON: %v", err)
+		// Si ça échoue ici, c'est probablement car predictions contient des NaN
+	}
 }
