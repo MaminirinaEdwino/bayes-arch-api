@@ -91,36 +91,6 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-// func predictHandler(w http.ResponseWriter, r *http.Request) {
-// 	if r.Method != http.MethodPost {
-// 		http.Error(w, "Méthode non autorisée", http.StatusMethodNotAllowed)
-// 		return
-// 	}
-
-// 	var req RecommendationRequest
-// 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-// 		http.Error(w, err.Error(), http.StatusBadRequest)
-// 		return
-// 	}
-
-// 	// Calculer l'inférence via ton moteur gobayes
-// 	resultFactor := network.Query(req.Target, req.Evidence)
-
-// 	// Transformer le facteur en map lisible pour le JSON
-// 	targetNode := network.Nodes[req.Target]
-// 	predictions := make(map[string]float64)
-// 	for i, stateName := range targetNode.States {
-// 		predictions[stateName] = resultFactor.Values[i]
-// 	}
-
-// 	resp := RecommendationResponse{
-// 		Target:      req.Target,
-// 		Predictions: predictions,
-// 	}
-
-// 	w.Header().Set("Content-Type", "application/json")
-// 	json.NewEncoder(w).Encode(resp)
-// }
 
 func predictHandler(w http.ResponseWriter, r *http.Request) {
 	// 1. Décodage de la requête JSON
@@ -130,18 +100,6 @@ func predictHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// evidenceLabels := make(map[string]string)
-	// for nodeName, stateIdx := range req.Evidence {
-	// 	node := network.Nodes[nodeName]
-	// 	if node != nil && stateIdx < len(node.States) {
-	// 		// On convertit l'index (1) en label ("Oui")
-	// 		evidenceLabels[nodeName] = node.States[stateIdx]
-	// 	}
-	// }
-
-	// 2. Lancement de l'inférence Bayésienne
-	// On demande au réseau de calculer la probabilité de 'Target'
-	// sachant les 'Evidence' fournies par l'utilisateur.
 	resultFactor := network.Query(req.Target, req.Evidence)
 
 	// 3. Préparation de la réponse lisible
