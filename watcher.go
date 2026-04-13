@@ -24,7 +24,6 @@ func watchRules(filename string, net *gobayes.Network) {
                 if event.Has(fsnotify.Write) {
                     log.Println("Modification détectée dans ",filename,", rechargement...")
                     syncNetworkRules(net, filename) 
-                    
                     log.Println("Réseau mis à jour avec succès !")
                 }
             case err, ok := <-watcher.Errors:
