@@ -1,4 +1,4 @@
-module guthub.com/MaminirinaEdwino/bayes-arch-api
+module github.com/MaminirinaEdwino/bayes-arch-api
 
 go 1.25.7
 
