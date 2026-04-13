@@ -7,7 +7,6 @@ import (
 )
 
 func predictHandler(w http.ResponseWriter, r *http.Request) {
-	// 1. Décodage de la requête JSON
 	var req RecommendationRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Requête JSON invalide", http.StatusBadRequest)
@@ -25,8 +24,6 @@ func predictHandler(w http.ResponseWriter, r *http.Request) {
 	for i, stateName := range targetNode.States {
 		predictions[stateName] = resultFactor.Values[i]
 	}
-
-	// 4. Envoi de la réponse JSON
 	resp := RecommendationResponse{
 		Target:      req.Target,
 		Predictions: predictions,
