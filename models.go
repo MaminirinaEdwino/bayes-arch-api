@@ -10,3 +10,4 @@ type RecommendationResponse struct {
 	Target      string             `json:"target"`
 	Predictions map[string]float64 `json:"predictions"` 
 }
+
